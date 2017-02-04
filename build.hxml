@@ -1,0 +1,9 @@
+-cp src
+-cp src-old
+-main Main
+
+-neko test.n
+
+-cmd neko test.n
+
+
