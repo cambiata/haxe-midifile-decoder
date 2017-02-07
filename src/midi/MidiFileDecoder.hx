@@ -1,11 +1,12 @@
 package midi;
 
+import cx.MidiTools;
 import haxe.io.Bytes;
 import haxe.io.BytesInput;
 
-import midi.message.MessageStatus;
-import midi.message.SystemMessageType;
-import midi.message.MetaEventMessageType;
+//import midi.message.MessageStatus;
+import midi.SystemMessageType;
+import midi.MetaEventMessageType;
 using MidiFileDecoder.ByteInputTools;
 
 class MidiFileDecoder
@@ -50,7 +51,7 @@ class MidiFileDecoder
 				eventDelta = readVariableLengthUint(input);
 				trackTime += eventDelta;
 				var dataAtPosition = input.getByteAtPosition();
-				if (midi.message.MessageStatus.isStatus(dataAtPosition & 0xF0))
+				if (midi.MessageStatus.isStatus(dataAtPosition & 0xF0))
 				{
 					previousStatusByte = dataAtPosition;
 				}
@@ -77,14 +78,8 @@ class MidiFileDecoder
 		}
 		while (byte & 0x80 != 0);
 
-		var value:UInt = 0;
-		var e:Int = temp.length -1;
-		while (e >= 0)
-		{
-			var b2 = temp.shift() <<24>> 24 ; // convert to signed char Int8
-			value += (b2 & 0x7F) << (7*e);
-			e--;
-		}
+		var value = MidiTools.bytesToIntVLV(temp.copy());
+		
 		return value;
 	}
 
@@ -124,9 +119,9 @@ class MidiFileDecoder
 			byte = previousStatusByte;
 			status = byte & 0xF0;
 		}
+		
 		// channel or system message type
 		lsb = byte & 0x0F;
-
 
 		switch (status)
 		{
@@ -134,33 +129,23 @@ class MidiFileDecoder
 				var byte1 = input.readUnsignedByte();
 				var byte2 = input.readUnsignedByte();
 				
-				var octave:Int = Math.floor(byte1 / 12) - 1;
-				var pitch:UInt =  cast(byte1, UInt);
-				var note:String = MidiNote.toString(cast( pitch % 12, MidiNote ));
-				var velocity:UInt = cast(byte2, UInt);
-				return MidiMessage.VoiceMessage(status, lsb, octave, pitch, note, velocity);
+				var pitch:UInt =  cast byte1;
+				var velocity:UInt = cast byte2;
+				return MidiMessage.VoiceMessage(status, lsb, byte1, byte2);
+				//var octave:Int = Math.floor(byte1 / 12) - 1;
+				//var note:String = MidiNote.toString(cast( pitch % 12, MidiNote ));
 
 			case MessageStatus.CONTROL_CHANGE, MessageStatus.PITCH_BEND:
 				var byte1 = input.readUnsignedByte();
 				var byte2 = input.readUnsignedByte();
-
 				return MidiMessage.ChannelMessage(status, lsb,byte1, byte2);
-				
-				//var message = new ChannelMessage(status, lsb,byte1, byte2);
-				//return message;
 
 			case MessageStatus.PROGRAM_CHANGE, MessageStatus.CHANNEL_PRESSURE:
 				var byte1 = input.readUnsignedByte();
-				
 				return MidiMessage.ChannelMessage(status, lsb, byte1, 0);
-				//var message =  new ChannelMessage(status, lsb, byte1);
-				//return message;
 
 			case MessageStatus.SYSTEM:
-				
-				var message =  createSystemMessage(lsb, input, inFile);
-				
-				return message;
+				return createSystemMessage(lsb, input, inFile);
 
 			default:// not supported or some major problem
 				return MidiMessage.InvalidMessage(status);
@@ -254,14 +239,14 @@ class MidiFileDecoder
 		var microsecondsPerQuarter:UInt = c | (b << 8) | (a << 16);
 		
 				
-		var tempo = Std.int(microsecondsPerQuarter / 24000);
+		//var tempo = Std.int(microsecondsPerQuarter / 24000);
 		
 		//this gives strange fractionnal dusts but haven't found a better calculus...
 		//for a good result, we should round bpm then redivide by 60 for bps
-		var bpm = 60000000.0 / microsecondsPerQuarter;
-		var bps = (60000000.0/60.0) / microsecondsPerQuarter;
+		//var bpm = 60000000.0 / microsecondsPerQuarter;
+		//var bps = (60000000.0/60.0) / microsecondsPerQuarter;
 		
-		return MidiMessage.SetTempoMessage(microsecondsPerQuarter, tempo, bpm, bps);
+		return MidiMessage.SetTempoMessage(microsecondsPerQuarter);
 	}	
 
 	function createSystemExclusiveMessage (type:UInt,  input:BytesInput) :MidiMessage
@@ -303,4 +288,6 @@ class ByteInputTools
 		input.position--;
 		return dataAtPosition;
 	}
+	
+	
 }

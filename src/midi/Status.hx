@@ -4,18 +4,19 @@ package midi;
  * Status
  * @author Jonas Nyström
  */
-@:enum abstract Status(String) 
+@:enum abstract Status(UInt) to UInt from UInt 
 {
-	var NOTE_OFF = 'NOTE_OFF';//				: Int =	0x80;
-	var NOTE_ON	 = 'NOTE_ON';//			: Int =	0x90;
-	var KEY_PRESSURE = 'KEY_PRESSURE';//			: Int =	0xA0;
-	var CONTROL_CHANGE = 'CONTROL_CHANGE';//		: Int =	0xB0;
-	var PROGRAM_CHANGE = 'PROGRAM_CHANGE';//		: Int =	0xC0;
-	var CHANNEL_PRESSURE	 = 'CHANNEL_PRESSURE';//	: Int =	0xD0;
-	var PITCH_BEND = 'PITCH_BEND';//			: Int =	0xE0;
-	var SYSTEM	 = 'SYSTEM';//			: Int =	0xF0;
-	var INVALID	 = 'INVALID';//			: Int =	0x00;
+	var NOTE_OFF : Int =	0x80;
+	var NOTE_ON: Int =	0x90;
+	var KEY_PRESSURE : Int =	0xA0;
+	var CONTROL_CHANGE : Int =	0xB0;
+	var PROGRAM_CHANGE : Int =	0xC0;
+	var CHANNEL_PRESSURE: Int =	0xD0;
+	var PITCH_BEND : Int =	0xE0;
+	var SYSTEM: Int =	0xF0;
+	var INVALID: Int =	0x00;
 	
+	/*
 	@:from static public function fromInt(val:Int) {
 		return switch val {
 		case 0x80:NOTE_OFF;
@@ -33,6 +34,6 @@ package midi;
 		}		
 		
 	}
-	
+	*/
 	
 }

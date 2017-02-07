@@ -1,9 +1,17 @@
+-cp ../../cx/src
 -cp src
--cp src-old
+#-cp src-old
 -main Main
 
 -neko test.n
-
 -cmd neko test.n
 
+#-cpp bin
 
+#-hl test.hl
+#-cmd hl test.hl
+
+#-lib hxnodejs
+#-js test.js
+
+#-cs bin-cs
